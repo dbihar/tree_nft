@@ -1,9 +1,14 @@
+from PIL import Image
+from PIL import EpsImagePlugin
+import cv2 as cv
 from turtle import *
 from random import *
 from math import sin, cos, tan, pi, radians, sqrt, ceil
 from random import randint, uniform
 from time import time
 
+BRANCH_NUM_SETTING = 11
+LENGTH_SETTING = 110
 ANG_SPREAD = 30
 ANG_OFFSET = 10
 LENGTH_SPREAD = 0.6
@@ -234,7 +239,8 @@ def draw_save_process(iter):
     tracer(0, 0)
     left(90)
     backward(300)
-    tree(11, 130)
+    
+    tree(BRANCH_NUM_SETTING, LENGTH_SETTING)
 
     #Grass
     grass()
@@ -243,8 +249,6 @@ def draw_save_process(iter):
     getcanvas().postscript(file="test.eps")
     getcanvas().postscript(file=(SAVEDIR + "eps/" +  SAVENAME + str(iter) + ".eps"))
 
-    from PIL import Image
-    from PIL import EpsImagePlugin
     dpi = 600.
     img = Image.open("test.eps")
     original = [float(d) for d in img.size]
@@ -259,7 +263,6 @@ def draw_save_process(iter):
     img.save('test.png', dpi=(600, 600))
     img.save((SAVEDIR + "png/" +  SAVENAME + str(iter) + ".png"), dpi=(600, 600))
     # Blurring
-    import cv2 as cv
     img = cv.imread('test.png')
     blur = cv.bilateralFilter(img,9,75,75)
     cv.imwrite("blur.png", blur)
@@ -271,4 +274,4 @@ if __name__ == '__main__':
     draw_save_process(0)
     draw_save_process(1)
     for i in range(NUM_IMG):
-        continue
+        draw_save_process(i)
