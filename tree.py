@@ -58,13 +58,20 @@ def tree(n, l):
 
 
 if __name__ == '__main__':
+    #Screen size
+    
+
 	# Starting of tree drawing
-	bgcolor(1, 1, 1)
-	ht()
-	speed(0)
-	tracer(0, 0)
-	left(90)
-	pu()
-	backward(300)
-	tree(10, 100)
-	done()
+    bgcolor(1, 1, 1)
+    ht()
+    speed(0)
+    tracer(0, 0)
+    left(90)
+    pu()
+    backward(300)
+    tree(10, 100)
+
+    # Save vector image
+    getcanvas().postscript(file="test.ps")
+    exitonclick()
+    done()
