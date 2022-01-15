@@ -38,6 +38,10 @@ GRASS_NUM = 4000
 GRASS_ANG_SPREAD = 40
 GRASS_ANG_OFFSET = 0
 
+SAVEDIR = "Images/"
+NUM_IMG = 1000
+SAVENAME = ""
+
 n = 500 # number of points on each ellipse
 # X,Y is the center of ellipse, a is radius on x-axis, b is radius on y-axis
 # ts is the starting angle of the ellipse, te is the ending angle of the ellipse
@@ -86,6 +90,13 @@ def tree(n, l):
             branch_remaining = n - 1 - int(FAST_FORWARD_BRANCH_END_NUM * random())
             if(branch_remaining < 1):
                 branch_remaining = 0
+            
+            posx, posy = pos()
+            if posx  > WIDTH/2 - (LENGTH_MIN + LENGTH_SPREAD)*l or \
+               posx  < -WIDTH/2 + (LENGTH_MIN + LENGTH_SPREAD)*l or \
+               posy  > HEIGHT/2 - (LENGTH_MIN + LENGTH_SPREAD)*l or \
+               posy  < -HEIGHT/2 + (LENGTH_MIN + LENGTH_SPREAD)*l:
+               branch_remaining = 0
 
             tree(branch_remaining, d)
             left(b)
@@ -166,7 +177,8 @@ def cloud(P):
     pu()
     
 
-if __name__ == '__main__':
+def draw_save_process(iter):
+    n = 500
     #Screen size
     screen = Screen()
     screen.setup(WIDTH + 4, HEIGHT + 8)  # fudge factors due to window borders & title bar
@@ -222,14 +234,14 @@ if __name__ == '__main__':
     tracer(0, 0)
     left(90)
     backward(300)
-    tree(10, 100)
+    tree(11, 130)
 
     #Grass
     grass()
 
     # Save vector image
     getcanvas().postscript(file="test.eps")
-    exitonclick()
+    getcanvas().postscript(file=(SAVEDIR + "eps/" +  SAVENAME + str(iter) + ".eps"))
 
     from PIL import Image
     from PIL import EpsImagePlugin
@@ -245,9 +257,18 @@ if __name__ == '__main__':
 
     #psimage=Image.open('test.eps')
     img.save('test.png', dpi=(600, 600))
-
+    img.save((SAVEDIR + "png/" +  SAVENAME + str(iter) + ".png"), dpi=(600, 600))
     # Blurring
     import cv2 as cv
     img = cv.imread('test.png')
     blur = cv.bilateralFilter(img,9,75,75)
     cv.imwrite("blur.png", blur)
+    cv.imwrite((SAVEDIR + "blur/" +  SAVENAME + str(iter) + ".png"), blur)
+    clear()
+    clearscreen()
+
+if __name__ == '__main__':
+    draw_save_process(0)
+    draw_save_process(1)
+    for i in range(NUM_IMG):
+        continue
