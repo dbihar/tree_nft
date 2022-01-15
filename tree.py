@@ -1,17 +1,18 @@
 from turtle import *
 from random import *
 from math import sin, cos, tan, pi, radians, sqrt
+from random import randint, uniform
 
 ANG_SPREAD = 30
 ANG_OFFSET = 10
 LENGTH_SPREAD = 0.6
 LENGTH_MIN = 0.5
-RED_LEAF_RANGE = 0.4
-GREEN_LEAF_RANGE = 0.4
-BLUE_LEAF_RANGE = 0.4
-RED_LEAF_RGB = 0.4
-GREEN_LEAF_RGB = 0.4
-BLUE_LEAF_RGB = 0.0
+RED_LEAF_RANGE = 0.9
+GREEN_LEAF_RANGE = 0.9
+BLUE_LEAF_RANGE = 0.9
+RED_LEAF_RGB = 0.1
+GREEN_LEAF_RGB = 0.1
+BLUE_LEAF_RGB = 0.1
 LEAF_ANGLE_RANGE = 90
 MAX_BRANCH_NUM = 3
 FAST_FORWARD_BRANCH_END_NUM = 1
@@ -23,16 +24,23 @@ LEFT_TO_RIGHT_LIGHT_DIFF = 0.5
 WIDTH, HEIGHT = 1080, 1080
 
 GRASS_HEIGHT_MIN = 10
-GRASS_HEIGHT_SPREAD = 40
+GRASS_HEIGHT_SPREAD = 50
 GRASS_THICK_MIN = 1
-GRASS_THICK_SPREAD = 5
-RED_GRASS_RANGE = 0.4
-GREEN_GRASS_RANGE = 0.4
+GRASS_THICK_SPREAD = 3
+RED_GRASS_RANGE = 0.3
+GREEN_GRASS_RANGE = 0.3
 BLUE_GRASS_RANGE = 0.1
-RED_GRASS_RGB = 0.4
+RED_GRASS_RGB = 0.5
 GREEN_GRASS_RGB = 0.6
-BLUE_GRASS_RGB = 0.05
-GRASS_NUM = 10000
+BLUE_GRASS_RGB = 0.1
+GRASS_NUM = 4000
+GRASS_ANG_SPREAD = 40
+GRASS_ANG_OFFSET = 0
+
+n = 500 # number of points on each ellipse
+# X,Y is the center of ellipse, a is radius on x-axis, b is radius on y-axis
+# ts is the starting angle of the ellipse, te is the ending angle of the ellipse
+# P is the list of coordinates of the points on the ellipse
 
 def grass():
     drawed = 0;
@@ -46,8 +54,11 @@ def grass():
             pu()
             setpos((posx, posy))
             pd()
-            pensize = GRASS_THICK_MIN + random() * GRASS_THICK_SPREAD
+            pensize(GRASS_THICK_MIN + random() * GRASS_THICK_SPREAD)
+            ang = GRASS_ANG_SPREAD * random() - GRASS_ANG_SPREAD/2
+            right(ang)
             fd(GRASS_HEIGHT_MIN + random() * GRASS_HEIGHT_SPREAD)
+            left(ang)
             drawed = drawed + 1
     pu()
 
@@ -99,7 +110,59 @@ def tree(n, l):
     for i in range(PEN_THICKNESS_RESOLUTION_NUM):
         backward(int(l / PEN_THICKNESS_RESOLUTION_NUM))
 
+def ellipse(X,Y,a,b,ts,te,P):
+    t = ts
+    for i in range(n):
+        x = a*cos(t)
+        y = b*sin(t)
+        P.append((x+X,y+Y))
+        t += (te-ts)/(n-1)
 
+# computes Euclidean distance between p1 and p2
+def dist(p1,p2):
+    return ((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)**0.5
+
+# draws an arc from p1 to p2 with extent value ext
+def draw_arc(p1,p2,ext):
+    up()
+    goto(p1)
+    seth(towards(p2))
+    a = heading() 
+    b = 360-ext 
+    c = (180-b)/2
+    d = a-c
+    e = d-90
+    r = dist(p1,p2)/2/sin(radians(b/2)) # r is the radius of the arc
+    seth(e) # e is initial heading of the circle
+    down()
+    circle(r,ext,100)
+    return (xcor(),ycor()) # returns the landing position of the circle
+                                         # this position should be extremely close to p2 but may not be exactly the same
+                                         # return this for continuous drawing to the next point
+
+
+def cloud(P):
+    step = n//10 # draw about 10 arcs on top and bottom part of cloud
+    a = 0 # a is index of first point
+    b = a + randint(step//2,step*2) # b is index of second point
+    p1 = P[a] # p1 is the position of the first point
+    p2 = P[b] # p2 is the position of the second point
+    fillcolor('white')
+    begin_fill()
+    p3 = draw_arc(p1,p2,uniform(70,180)) # draws the arc with random extention
+    while b < len(P)-1:
+        p1 = p3 # start from the end of the last arc 
+        if b < len(P)/2: # first half is top, more ragged
+            ext = uniform(70,180)
+            b += randint(step//2,step*2)
+        else: # second half is bottom, more smooth
+            ext = uniform(30,70)
+            b += randint(step,step*2)
+        b = min(b,len(P)-1) # make sure to not skip past the last point
+        p2 = P[b] # second point
+        p3 = draw_arc(p1,p2,ext) # draws an arc and return the end position
+    end_fill()
+    pu()
 
 
 if __name__ == '__main__':
@@ -111,10 +174,31 @@ if __name__ == '__main__':
     pu()
     ht()
     setpos((0,-100))    
-    pd()
+
+    # Drawing Clouds
+    speed(0)
+    hideturtle()
+    fillcolor(0.8, 0.8, 1.0)
+    pu()
+    setpos(-WIDTH/2, -HEIGHT/2)
+    begin_fill()
+    setpos(-WIDTH/2, HEIGHT/2)
+    setpos(WIDTH/2, HEIGHT/2)
+    setpos(WIDTH/2, -HEIGHT/2)
+    end_fill()
+    setpos(0,0)
+    pu()
+    pencolor('white')
+    pensize(2)
+
+    P = [] # starting from empty list
+    ellipse(0,0,300,200,0,pi,P) # taller top half
+    ellipse(0,0,300,50,pi,pi*2,P) # shorter bottom half
+    cloud(P)
 
     #Hill drawing
     pu()
+    setheading(0)
     setpos((0,-470))  
     pensize(1)
     fillcolor(0.1, 0.7, 0.1)
@@ -131,12 +215,11 @@ if __name__ == '__main__':
 
 	# Starting of tree drawing
     setpos((0,-100))  
-    bgcolor(0.8, 0.8, 1)
     ht()
+    pu()
     speed(0)
     tracer(0, 0)
     left(90)
-    pu()
     backward(300)
     tree(10, 100)
 
@@ -147,3 +230,9 @@ if __name__ == '__main__':
     getcanvas().postscript(file="test.ps")
     exitonclick()
     done()
+
+    # Blurring
+    import cv2 as cv
+    img = cv.imread('test.ps')
+    blur = cv.bilateralFilter(img,9,75,75)
+    cv.imshow(blur)
