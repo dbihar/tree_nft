@@ -1,7 +1,8 @@
 from turtle import *
 from random import *
-from math import sin, cos, tan, pi, radians, sqrt
+from math import sin, cos, tan, pi, radians, sqrt, ceil
 from random import randint, uniform
+from time import time
 
 ANG_SPREAD = 30
 ANG_OFFSET = 10
@@ -163,7 +164,7 @@ def cloud(P):
         p3 = draw_arc(p1,p2,ext) # draws an arc and return the end position
     end_fill()
     pu()
-
+    
 
 if __name__ == '__main__':
     #Screen size
@@ -227,12 +228,26 @@ if __name__ == '__main__':
     grass()
 
     # Save vector image
-    getcanvas().postscript(file="test.ps")
+    getcanvas().postscript(file="test.eps")
     exitonclick()
-    done()
+
+    from PIL import Image
+    from PIL import EpsImagePlugin
+    dpi = 600.
+    img = Image.open("test.eps")
+    original = [float(d) for d in img.size]
+    # scale = width / original[0] # calculated wrong height
+    scale = dpi/72.0            # this fixed it
+    if dpi is not 0:
+        img.load(scale = ceil(scale))
+    if scale != 1:
+        img.thumbnail([round(scale * d) for d in original], Image.ANTIALIAS)
+
+    #psimage=Image.open('test.eps')
+    img.save('test.png', dpi=(600, 600))
 
     # Blurring
     import cv2 as cv
-    img = cv.imread('test.ps')
+    img = cv.imread('test.png')
     blur = cv.bilateralFilter(img,9,75,75)
-    cv.imshow(blur)
+    cv.imwrite("blur.png", blur)
