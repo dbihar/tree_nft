@@ -72,7 +72,7 @@ def grass():
             drawed = drawed + 1
     pu()
 
-def tree(n, l):
+def tree(n, l, last_color):
     pd()
     t = cos(radians(heading() + 45)) / 8 + 0.25
     pencolor(t, t, t)
@@ -80,7 +80,9 @@ def tree(n, l):
     #pensize(n**3 / 50)
     #forward(l)
 
+    t_diff = (t - last_color) / PEN_THICKNESS_RESOLUTION_NUM
     for i in range(PEN_THICKNESS_RESOLUTION_NUM):
+        pencolor(last_color + t_diff * i, last_color + t_diff * i, last_color + t_diff * i)
         pensize(int((n - (i/(PEN_THICKNESS_RESOLUTION_NUM)))**2 / 3))
         forward(int(l / PEN_THICKNESS_RESOLUTION_NUM))
 
@@ -97,13 +99,13 @@ def tree(n, l):
                 branch_remaining = 0
             
             posx, posy = pos()
-            if posx  > WIDTH/2 - (LENGTH_MIN + LENGTH_SPREAD)*l or \
-               posx  < -WIDTH/2 + (LENGTH_MIN + LENGTH_SPREAD)*l or \
-               posy  > HEIGHT/2 - (LENGTH_MIN + LENGTH_SPREAD)*l or \
-               posy  < -HEIGHT/2 + (LENGTH_MIN + LENGTH_SPREAD)*l:
+            if posx  > WIDTH/2 - (LENGTH_MIN + LENGTH_SPREAD)*l*2 or \
+               posx  < -WIDTH/2 + (LENGTH_MIN + LENGTH_SPREAD)*l*2 or \
+               posy  > HEIGHT/2 - (LENGTH_MIN + LENGTH_SPREAD)*l*2 or \
+               posy  < -HEIGHT/2 + (LENGTH_MIN + LENGTH_SPREAD)*l*2:
                branch_remaining = 0
 
-            tree(branch_remaining, d)
+            tree(branch_remaining, d, t)
             left(b)
     else:
         position = pos()
@@ -239,8 +241,8 @@ def draw_save_process(iter):
     tracer(0, 0)
     left(90)
     backward(300)
-    
-    tree(BRANCH_NUM_SETTING, LENGTH_SETTING)
+    t = cos(radians(heading() + 45)) / 8 + 0.25
+    tree(BRANCH_NUM_SETTING, LENGTH_SETTING, t)
 
     #Grass
     grass()
